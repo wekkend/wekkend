@@ -1,0 +1,258 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <vector>
+#include <algorithm>
+
+using namespace std;
+
+// Struct d? luu thông tin tivi
+struct TV {
+    string maTivi;
+    string tenTivi;
+    string heDieuHanh;
+    string congNgheHinhAnh;
+    bool dieuKhienBangGiongNoi;
+    float ngang, cao, day;
+    int namRaMat;
+    string hang;
+    long giaBan;
+};
+
+// Hàm nh?p thông tin tivi v?i ki?m tra d? li?u
+void nhapThongTinTivi(TV& tv) {
+    do {
+        cout << "Nhap ma tivi (<= 6 ky tu): ";
+        cin >> tv.maTivi;
+    } while (tv.maTivi.length() > 6);
+
+    cin.ignore();
+    cout << "Nhap ten tivi: ";
+    getline(cin, tv.tenTivi);
+
+    cout << "Nhap he dieu hanh: ";
+    getline(cin, tv.heDieuHanh);
+
+    cout << "Nhap cong nghe hinh anh: ";
+    getline(cin, tv.congNgheHinhAnh);
+
+    char dieuKhienGiongNoi;
+    do {
+        cout << "Dieu khien bang giong noi (y/n): ";
+        cin >> dieuKhienGiongNoi;
+    } while (dieuKhienGiongNoi != 'y' && dieuKhienGiongNoi != 'n');
+    tv.dieuKhienBangGiongNoi = (dieuKhienGiongNoi == 'y');
+
+    cout << "Nhap kich thuoc (Ngang Cao Day cm): ";
+    cin >> tv.ngang >> tv.cao >> tv.day;
+
+    do {
+        cout << "Nhap nam ra mat: ";
+        cin >> tv.namRaMat;
+    } while (tv.namRaMat < 1000 || tv.namRaMat > 9999);
+
+    cin.ignore();
+    cout << "Nhap hang: ";
+    getline(cin, tv.hang);
+
+    do {
+        cout << "Nhap gia ban: ";
+        cin >> tv.giaBan;
+    } while (tv.giaBan > 999999999);
+}
+
+// Hàm xu?t thông tin tivi
+void hienThiThongTinTivi(const TV& tv) {
+    cout << "Ma Tivi: " << tv.maTivi << endl;
+    cout << "Ten Tivi: " << tv.tenTivi << endl;
+    cout << "He dieu hanh: " << tv.heDieuHanh << endl;
+    cout << "Cong nghe hinh anh: " << tv.congNgheHinhAnh << endl;
+    cout << "Dieu khien bang giong noi: " << (tv.dieuKhienBangGiongNoi ? "Co" : "Khong") << endl;
+    cout << "Kich thuoc: Ngang " << tv.ngang << " cm - Cao " << tv.cao << " cm - Day " << tv.day << " cm" << endl;
+    cout << "Nam ra mat: " << tv.namRaMat << endl;
+    cout << "Hang: " << tv.hang << endl;
+    cout << "Gia ban: " << tv.giaBan << endl;
+}
+
+// Hàm luu danh sách tivi vào file
+void luuDanhSachTiviVaoFile(const vector<TV>& danhSachTivi, const string& fileName, bool ghiThem) {
+    ofstream file;
+    if (ghiThem) {
+        file.open(fileName.txt, ios::app);
+    } else {
+        file.open(fileName);
+    }
+
+    if (file.is_open()) {
+        for (const auto& tv : danhSachTivi) {
+            file << tv.maTivi << "," << tv.tenTivi << "," << tv.heDieuHanh << ","
+                 << tv.congNgheHinhAnh << "," << tv.dieuKhienBangGiongNoi << ","
+                 << tv.ngang << "," << tv.cao << "," << tv.day << ","
+                 << tv.namRaMat << "," << tv.hang << "," << tv.giaBan << endl;
+        }
+        file.close();
+        cout << "Da luu danh sach tivi vao file " << fileName << endl;
+    } else {
+        cout << "Khong the mo file!" << endl;
+    }
+}
+
+// Hàm d?c danh sách tivi t? file
+void docDanhSachTiviTuFile(vector<TV>& danhSachTivi, const string& fileName) {
+    ifstream file(fileName);
+    if (file.is_open()) {
+        TV tv;
+        while (file >> tv.maTivi >> tv.tenTivi >> tv.heDieuHanh >> tv.congNgheHinhAnh
+                   >> tv.dieuKhienBangGiongNoi >> tv.ngang >> tv.cao >> tv.day
+                   >> tv.namRaMat >> tv.hang >> tv.giaBan) {
+            danhSachTivi.push_back(tv);
+        }
+        file.close();
+        cout << "Da doc danh sach tivi tu file " << fileName << endl;
+    } else {
+        cout << "Khong the mo file!" << endl;
+    }
+}
+
+// Hàm tìm tivi theo mã
+void timTiviTheoMa(const vector<TV>& danhSachTivi, const string& maTivi) {
+    bool timThay = false;
+    for (const auto& tv : danhSachTivi) {
+        if (tv.maTivi == maTivi) {
+            hienThiThongTinTivi(tv);
+            timThay = true;
+            break;
+        }
+    }
+    if (!timThay) {
+        cout << "Khong tim thay tivi voi ma: " << maTivi << endl;
+    }
+}
+
+// Hàm tìm tivi theo tên
+void timTiviTheoTen(const vector<TV>& danhSachTivi, const string& tuKhoa) {
+    bool timThay = false;
+    for (const auto& tv : danhSachTivi) {
+        if (tv.tenTivi.find(tuKhoa) != string::npos) {
+            hienThiThongTinTivi(tv);
+            timThay = true;
+        }
+    }
+    if (!timThay) {
+        cout << "Khong tim thay tivi voi tu khoa: " << tuKhoa << endl;
+    }
+}
+
+// Hàm xu?t tivi theo di?u khi?n b?ng gi?ng nói
+void xuatTiviTheoDieuKhienGiongNoi(const vector<TV>& danhSachTivi, bool coDieuKhien) {
+    string fileName = coDieuKhien ? "DS_tivi_co_dieu_khien.csv" : "DS_tivi_khong_co_dieu_khien.csv";
+    ofstream file(fileName);
+    for (const auto& tv : danhSachTivi) {
+        if (tv.dieuKhienBangGiongNoi == coDieuKhien) {
+            hienThiThongTinTivi(tv);
+            file << tv.maTivi << "," << tv.tenTivi << "," << tv.heDieuHanh << ","
+                 << tv.congNgheHinhAnh << "," << tv.dieuKhienBangGiongNoi << ","
+                 << tv.ngang << "," << tv.cao << "," << tv.day << ","
+                 << tv.namRaMat << "," << tv.hang << "," << tv.giaBan << endl;
+        }
+    }
+    file.close();
+    cout << "Da luu danh sach vao file " << fileName << endl;
+}
+
+// Hàm s?p x?p tivi theo nam ra m?t (m?i ra tru?c)
+void sapXepTiviTheoNamRaMat(vector<TV>& danhSachTivi) {
+    sort(danhSachTivi.begin(), danhSachTivi.end(), [](const TV& a, const TV& b) {
+        return a.namRaMat > b.namRaMat;
+    });
+}
+
+int main() {
+    vector<TV> danhSachTivi;
+    int luaChon;
+
+    do {
+        cout << "Menu:\n";
+        cout << "1. Nhap danh sach tivi\n";
+        cout << "2. Xuat danh sach tivi\n";
+        cout << "3. Luu danh sach tivi vao file\n";
+        cout << "4. Doc danh sach tivi tu file\n";
+        cout << "5. Tim tivi theo ma\n";
+        cout << "6. Tim tivi theo ten\n";
+        cout << "7. Xuat tivi theo dieu khien bang giong noi\n";
+        cout << "8. Sap xep tivi theo nam ra mat\n";
+        cout << "0. Thoat\n";
+        cout << "Nhap lua chon: ";
+        cin >> luaChon;
+
+        switch (luaChon) {
+            case 1: {
+                int soLuong;
+                cout << "Nhap so luong tivi: ";
+                cin >> soLuong;
+                for (int i = 0; i < soLuong; ++i) {
+                    TV tv;
+                    nhapThongTinTivi(tv);
+                    danhSachTivi.push_back(tv);
+                }
+                break;
+            }
+            case 2:
+                for (const auto& tv : danhSachTivi) {
+                    hienThiThongTinTivi(tv);
+                }
+                break;
+            case 3: {
+                string fileName;
+                bool ghiThem;
+                cout << "Nhap ten file: ";
+                cin >> fileName;
+                cout << "Ghi them vao file (1: co, 0: khong)? ";
+                cin >> ghiThem;
+                luuDanhSachTiviVaoFile(danhSachTivi, fileName, ghiThem);
+                break;
+            }
+            case 4: {
+                string fileName;
+                cout << "Nhap ten file de doc: ";
+                cin >> fileName;
+                docDanhSachTiviTuFile(danhSachTivi, fileName);
+                break;
+            }
+            case 5: {
+                string maTivi;
+                cout << "Nhap ma tivi can tim: ";
+                cin >> maTivi;
+                timTiviTheoMa(danhSachTivi, maTivi);
+                break;
+            }
+            case 6: {
+                string tuKhoa;
+                cout << "Nhap tu khoa can tim trong ten tivi: ";
+                cin >> tuKhoa;
+                timTiviTheoTen(danhSachTivi, tuKhoa);
+                break;
+            }
+            case 7: {
+                bool coDieuKhien;
+                cout << "Chon tivi co dieu khien bang giong noi (1: co, 0: khong): ";
+                cin >> coDieuKhien;
+                xuatTiviTheoDieuKhienGiongNoi(danhSachTivi, coDieuKhien);
+                break;
+            }
+            case 8:
+                sapXepTiviTheoNamRaMat(danhSachTivi);
+                cout << "Danh sach tivi da duoc sap xep theo nam ra mat (moi nhat truoc).\n";
+                break;
+            case 0:
+                cout << "Thoat chuong trinh.\n";
+                break;
+            default:
+                cout << "Lua chon khong hop le!\n";
+                break;
+        }
+
+    } while (luaChon != 0);
+
+    return 0;
+}
