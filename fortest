@@ -1,258 +1,367 @@
-#include <iostream>
+ï»¿#include <iostream>
+#include <regex>
 #include <fstream>
-#include <string>
-#include <vector>
-#include <algorithm>
-
+#include <cstring>
 using namespace std;
 
-// Struct d? luu thông tin tivi
-struct TV {
-    string maTivi;
-    string tenTivi;
-    string heDieuHanh;
-    string congNgheHinhAnh;
-    bool dieuKhienBangGiongNoi;
-    float ngang, cao, day;
-    int namRaMat;
-    string hang;
-    long giaBan;
+struct KichThuoc {
+    double ngang;
+    double cao;
+    double day;
 };
 
-// Hàm nh?p thông tin tivi v?i ki?m tra d? li?u
-void nhapThongTinTivi(TV& tv) {
-    do {
-        cout << "Nhap ma tivi (<= 6 ky tu): ";
-        cin >> tv.maTivi;
-    } while (tv.maTivi.length() > 6);
+struct TiVi {
+    char maTiVi[7];
+    char tenTiVi[51];
+    char HDH[31];
+    char congNgheHA[51];
+    bool dkGiongNoi;
+    KichThuoc kichthuoc;
+    int nam;
+    char hang[21];
+    int gia;
+};
 
+TiVi nhapTivi() {
+    TiVi a;
+
+    // MÃ£ TiVi
+    cout << "Ma Ti Vi: ";
+    cin >> a.maTiVi;
+    regex pattern_maTiVi("[a-zA-Z0-9]{1,6}");
+    while (!regex_match(string(a.maTiVi), pattern_maTiVi)) {
+        cout << "Nhap lai sai format (toi da 6 ky tu chu va so): ";
+        cin >> a.maTiVi;
+    }
+
+    cout << "Ten Ti Vi: ";
     cin.ignore();
-    cout << "Nhap ten tivi: ";
-    getline(cin, tv.tenTivi);
+    cin.getline(a.tenTiVi, 51);
+    regex pattern_tenTiVi(".{1,50}");
+    while (!regex_match(string(a.tenTiVi), pattern_tenTiVi)) {
+        cout << "Nhap lai sai format: ";
+        cin.getline(a.tenTiVi, 51);
+    }
 
-    cout << "Nhap he dieu hanh: ";
-    getline(cin, tv.heDieuHanh);
+    // Há»‡ Ä‘iá»u hÃ nh
+    cout << "He Dieu Hanh: ";
+    cin.getline(a.HDH, 31);
+    regex pattern_HDH(".{1,30}");
+    while (!regex_match(string(a.HDH), pattern_HDH)) {
+        cout << "Nhap lai sai format: ";
+        cin.getline(a.HDH, 31);
+    }
 
-    cout << "Nhap cong nghe hinh anh: ";
-    getline(cin, tv.congNgheHinhAnh);
+    // CÃ´ng nghá»‡ hÃ¬nh áº£nh
+    cout << "Cong nghe hinh anh: ";
+    cin.getline(a.congNgheHA, 51);
+    regex pattern_congNgheHA(".{1,50}");
+    while (!regex_match(string(a.congNgheHA), pattern_congNgheHA)) {
+        cout << "Nhap lai sai format: ";
+        cin.getline(a.congNgheHA, 51);
+    }
 
-    char dieuKhienGiongNoi;
-    do {
-        cout << "Dieu khien bang giong noi (y/n): ";
-        cin >> dieuKhienGiongNoi;
-    } while (dieuKhienGiongNoi != 'y' && dieuKhienGiongNoi != 'n');
-    tv.dieuKhienBangGiongNoi = (dieuKhienGiongNoi == 'y');
+    // Äiá»u khiá»ƒn giá»ng nÃ³i
+    cout << "Co dieu khien giong noi? (true/false): ";
+    string dkGiongNoi;
+    cin >> dkGiongNoi;
+    regex pattern_giongNoi("^(true|false|True|False)");
+    while (!regex_match(dkGiongNoi, pattern_giongNoi)) {
+        cout << "Nhap lai (true/false): ";
+        cin >> dkGiongNoi;
+    }
+    a.dkGiongNoi = (dkGiongNoi == "True" || dkGiongNoi == "true");
 
-    cout << "Nhap kich thuoc (Ngang Cao Day cm): ";
-    cin >> tv.ngang >> tv.cao >> tv.day;
+    // KÃ­ch thÆ°á»›c
+    cout << "Nhap kich thuoc (Ngang Cao Day): ";
+    cout << "Nhap chieu ngang: ";
+    cin >> a.kichthuoc.ngang;
+    cout << "Nhap chieu cao: ";
+    cin >> a.kichthuoc.cao;
+    cout << "Nhap chieu dai: ";
+    cin >> a.kichthuoc.day;
 
-    do {
-        cout << "Nhap nam ra mat: ";
-        cin >> tv.namRaMat;
-    } while (tv.namRaMat < 1000 || tv.namRaMat > 9999);
+    // NÄƒm sáº£n xuáº¥t
+    cout << "Nam san xuat: ";
+    cin >> a.nam;
+    regex pattern_Nam("^[1-2][0-9]{3}");
+    while (!regex_match(to_string(a.nam), pattern_Nam)) {
+        cout << "Nhap lai nam san xuat (4 chu so): ";
+        cin >> a.nam;
+    }
 
+    // HÃ£ng
+    cout << "Hang san xuat: ";
     cin.ignore();
-    cout << "Nhap hang: ";
-    getline(cin, tv.hang);
-
-    do {
-        cout << "Nhap gia ban: ";
-        cin >> tv.giaBan;
-    } while (tv.giaBan > 999999999);
-}
-
-// Hàm xu?t thông tin tivi
-void hienThiThongTinTivi(const TV& tv) {
-    cout << "Ma Tivi: " << tv.maTivi << endl;
-    cout << "Ten Tivi: " << tv.tenTivi << endl;
-    cout << "He dieu hanh: " << tv.heDieuHanh << endl;
-    cout << "Cong nghe hinh anh: " << tv.congNgheHinhAnh << endl;
-    cout << "Dieu khien bang giong noi: " << (tv.dieuKhienBangGiongNoi ? "Co" : "Khong") << endl;
-    cout << "Kich thuoc: Ngang " << tv.ngang << " cm - Cao " << tv.cao << " cm - Day " << tv.day << " cm" << endl;
-    cout << "Nam ra mat: " << tv.namRaMat << endl;
-    cout << "Hang: " << tv.hang << endl;
-    cout << "Gia ban: " << tv.giaBan << endl;
-}
-
-// Hàm luu danh sách tivi vào file
-void luuDanhSachTiviVaoFile(const vector<TV>& danhSachTivi, const string& fileName, bool ghiThem) {
-    ofstream file;
-    if (ghiThem) {
-        file.open(fileName.txt, ios::app);
-    } else {
-        file.open(fileName);
+    cin.getline(a.hang, 21);
+    regex pattern_hang(".{1,20}");
+    while (!regex_match(a.hang, pattern_hang)) {
+        cout << "Nhap lai sai format (toi da 20 ky tu): ";
+        cin.getline(a.hang, 21);
     }
 
-    if (file.is_open()) {
-        for (const auto& tv : danhSachTivi) {
-            file << tv.maTivi << "," << tv.tenTivi << "," << tv.heDieuHanh << ","
-                 << tv.congNgheHinhAnh << "," << tv.dieuKhienBangGiongNoi << ","
-                 << tv.ngang << "," << tv.cao << "," << tv.day << ","
-                 << tv.namRaMat << "," << tv.hang << "," << tv.giaBan << endl;
+    // GiÃ¡ bÃ¡n
+    cout << "Gia ban: ";
+    cin >> a.gia;
+    regex pattern_gia("^[1-9][0-9]\\d{0,8}");  // Corrected regex for 9 digits max
+    while (!regex_match(to_string(a.gia), pattern_gia)) {
+        cout << "Nhap lai sai format (toi da 9 chu so): ";
+        cin >> a.gia;
+    }
+
+    return a;
+}
+
+void nhapDsTiVi(TiVi a[], int n) {
+    for (int i = 0; i < n; i++) {
+        cout << "Nhap thong tin Ti Vi thu " << i + 1 << ":\n";
+        a[i] = nhapTivi();
+    }
+}
+void xuatTivi(TiVi a) {
+    cout << "\n-------------------------------------------------------------\n";
+    cout << "Thong Tin TiVi";
+    cout << "Ma Ti Vi: " << a.maTiVi << endl;
+    cout << "Ten Ti Vi: " << a.tenTiVi << endl;
+    cout << "He Dieu hanh: " << a.HDH << endl;
+    cout << "Cong nghe hinh anh: " << a.congNgheHA << endl;
+    cout << "Dieu khien giong noi: " << (a.dkGiongNoi ? "Co" : "Khong") << endl;
+    cout << "Kich thuoc : ";
+    cout << "Ngang: " << a.kichthuoc.ngang << "cm ";
+    cout << "- Cao: " << a.kichthuoc.cao << "cm ";
+    cout << "- Dai: " << a.kichthuoc.day << "cm \n";
+    cout << "Nam ra mat: " << a.nam << endl;
+    cout << "Hang : " << a.hang << endl;
+    cout << "Gia ban: " << a.gia << "\n\n";
+}
+void xuatDsTiVi(TiVi a[], int n) {
+    cout << "XUAT DANH SACH TIVI\n";
+    for (int i = 0; i < n; i++) {
+        cout << "Thong Tin TiVi thu " << i << endl;
+        cout << "Ma Ti Vi: " << a[i].maTiVi << endl;
+        cout << "Ten Ti Vi: " << a[i].tenTiVi << endl;
+        cout << "He Dieu hanh: " << a[i].HDH << endl;
+        cout << "Cong nghe hinh anh: " << a[i].congNgheHA << endl;
+        cout << "Dieu khien giong noi: " << (a[i].dkGiongNoi ? "Co" : "Khong") << endl;
+        cout << "Kich thuoc : ";
+        cout << "Ngang: " << a[i].kichthuoc.ngang << "cm ";
+        cout << "- Cao: " << a[i].kichthuoc.cao << "cm ";
+        cout << "- Dai: " << a[i].kichthuoc.day << "cm \n";
+        cout << "Nam ra mat: " << a[i].nam << endl;
+        cout << "Hang : " << a[i].hang << endl;
+        cout << "Gia ban: " << a[i].gia << "\n\n";
+    }
+}
+
+void ghiFile_Choice1(TiVi a) {
+    fstream f("dstivi.txt", ios::out | ios::trunc | ios::binary);  // Correct usage of trunc with out
+    if (!f) {
+        cout << "Loi mo tep!" << endl;
+    }
+    f.write(reinterpret_cast<char*>(&a), sizeof(TiVi));
+    f.close();
+}
+
+void ghiFile_Choice2(TiVi a) {
+    fstream f("dstivi.txt", ios::out | ios::app | ios::binary);
+    if (!f) {
+        cout << "Loi mo tep!" << endl;
+    }
+    f.write(reinterpret_cast<char*>(&a), sizeof(TiVi));
+    f.close();
+    cout << "Da ghi tep thanh cong\n\n";
+}
+
+void ghiDsTiVi(TiVi a[], int n) {
+    cout << "Ghi danh sach Ti Vi vao file\n";
+    ghiFile_Choice1(a[0]);  // Start by overwriting the file
+
+    for (int i = 1; i < n; i++) {
+        cout << "--------------------------------------------------------------\n";
+        cout << "Ban co 2 su lua chon: \n\n";
+        cout << "An phim 1: Neu ban muon xoa du lieu cu truoc do va ghi lai.\n";
+        cout << "An phim 2: Neu ban muon ghi tiep tuc.\n";
+        int choice;
+        cout << "Nhap su lua chon: ";
+        cin >> choice;
+        regex pattern_choice("[1 - 2]");
+        while(!regex_match(to_string(choice), pattern_choice)){
+            cout << "Nhap sai format (Nhap lai): ";
+            cin >> choice;
         }
-        file.close();
-        cout << "Da luu danh sach tivi vao file " << fileName << endl;
-    } else {
-        cout << "Khong the mo file!" << endl;
-    }
-}
-
-// Hàm d?c danh sách tivi t? file
-void docDanhSachTiviTuFile(vector<TV>& danhSachTivi, const string& fileName) {
-    ifstream file(fileName);
-    if (file.is_open()) {
-        TV tv;
-        while (file >> tv.maTivi >> tv.tenTivi >> tv.heDieuHanh >> tv.congNgheHinhAnh
-                   >> tv.dieuKhienBangGiongNoi >> tv.ngang >> tv.cao >> tv.day
-                   >> tv.namRaMat >> tv.hang >> tv.giaBan) {
-            danhSachTivi.push_back(tv);
+        if (choice == 1) {
+            ghiFile_Choice1(a[i]);
         }
-        file.close();
-        cout << "Da doc danh sach tivi tu file " << fileName << endl;
-    } else {
-        cout << "Khong the mo file!" << endl;
-    }
-}
-
-// Hàm tìm tivi theo mã
-void timTiviTheoMa(const vector<TV>& danhSachTivi, const string& maTivi) {
-    bool timThay = false;
-    for (const auto& tv : danhSachTivi) {
-        if (tv.maTivi == maTivi) {
-            hienThiThongTinTivi(tv);
-            timThay = true;
-            break;
+        else if (choice == 2) {
+            ghiFile_Choice2(a[i]);
         }
     }
-    if (!timThay) {
-        cout << "Khong tim thay tivi voi ma: " << maTivi << endl;
-    }
 }
 
-// Hàm tìm tivi theo tên
-void timTiviTheoTen(const vector<TV>& danhSachTivi, const string& tuKhoa) {
-    bool timThay = false;
-    for (const auto& tv : danhSachTivi) {
-        if (tv.tenTivi.find(tuKhoa) != string::npos) {
-            hienThiThongTinTivi(tv);
-            timThay = true;
+void docFile(string fileName, int n, TiVi a[]) {
+    fstream f(fileName, ios::in | ios::binary);
+    if (!f) {
+        cout << "Loi mo tep!" << endl;
+        return;
+    }
+    cout << "Doc file va in ra man hinh\n\n";
+    for (int i = 0; i < n; i++) {
+        cout << "-------------------------------------------------------------\n";
+        cout << "Ti Vi thu " << i+1 << "\n";
+        f.read(reinterpret_cast<char*>(&a[i]), sizeof(TiVi));
+        cout << "Ma Ti Vi: " << a[i].maTiVi << endl;
+        cout << "Ten Ti Vi: " << a[i].tenTiVi << endl;
+        cout << "Cong nghe hinh anh: " << a[i].congNgheHA << endl;
+        cout << "Dieu khien giong noi: " << (a[i].dkGiongNoi ? "Co" : "Khong") << endl;
+        cout << "He Dieu hanh: " << a[i].HDH << endl;
+        cout << "Kich thuoc (Cao, Ngang, Day): " << a[i].kichthuoc.cao << ", " << a[i].kichthuoc.ngang << ", " << a[i].kichthuoc.day << endl;
+        cout << "Nam san xuat: " << a[i].nam << endl;
+        cout << "Hang san xuat: " << a[i].hang << endl;
+        cout << "Gia tien: " << a[i].gia;
+        cout << "\n\n";
+    }
+    f.close();
+}
+void find(TiVi a[], char s[], int n) {
+    for (int i = 0 ; i < n ; i++){
+        if (strstr(a[i].maTiVi, s)) {
+            xuatTivi(a[i]);
+        }
+        cout << endl;
+    }
+}
+void findName(TiVi a[], char s[], int n) {
+    for (int i = 0; i < n; i++) {
+        if (strstr(a[i].tenTiVi, s)) {
+            xuatTivi(a[i]);
+        }
+        cout << endl;
+    }
+}
+void ghiFilecsv(TiVi a) {
+    fstream f("dstivi.csv", ios::out | ios::binary);
+    if (!f) {
+        cout << "Khong the mo file";
+    }
+    f.write(reinterpret_cast<char*> (&a), sizeof(TiVi));
+}
+void lc_DkGiongNoi(TiVi a[], int n) {
+    cout << "Hay nhap lua chon ma ban muon ghi tivi co dieu khien giong noi hay co giong noi?: ";
+    char choice[10];
+    cin.ignore();
+    cin.getline(choice, 10);
+    regex pattern_choice("^(true|True|false|False)");
+    while (!regex_match(choice, pattern_choice)) {
+        cout << "Sai format Nhap lai: ";
+        cin >> choice;
+    }
+    for (int i = 0; i < n; i++) {
+        if (choice == "true" || choice == "True") {
+            ghiFilecsv(a[i]);
+        }
+        else {
+            ghiFilecsv(a[i]);
         }
     }
-    if (!timThay) {
-        cout << "Khong tim thay tivi voi tu khoa: " << tuKhoa << endl;
-    }
 }
-
-// Hàm xu?t tivi theo di?u khi?n b?ng gi?ng nói
-void xuatTiviTheoDieuKhienGiongNoi(const vector<TV>& danhSachTivi, bool coDieuKhien) {
-    string fileName = coDieuKhien ? "DS_tivi_co_dieu_khien.csv" : "DS_tivi_khong_co_dieu_khien.csv";
-    ofstream file(fileName);
-    for (const auto& tv : danhSachTivi) {
-        if (tv.dieuKhienBangGiongNoi == coDieuKhien) {
-            hienThiThongTinTivi(tv);
-            file << tv.maTivi << "," << tv.tenTivi << "," << tv.heDieuHanh << ","
-                 << tv.congNgheHinhAnh << "," << tv.dieuKhienBangGiongNoi << ","
-                 << tv.ngang << "," << tv.cao << "," << tv.day << ","
-                 << tv.namRaMat << "," << tv.hang << "," << tv.giaBan << endl;
+void findYear(TiVi a[], int c, int n) {
+    for (int i = 0; i < n; i++) {
+        if (a[i].nam == c) {
+            xuatTivi(a[i]);
+            cout << endl;
         }
     }
-    file.close();
-    cout << "Da luu danh sach vao file " << fileName << endl;
 }
+int demTiVi(TiVi a[],int start, int end, int n) {
+    int cnt = 0;
+    for (int i = 0; i < n; i++) {
+        if (a[i].gia >= start && a[i].gia <= end) {
+            cnt += 1;
+        }
 
-// Hàm s?p x?p tivi theo nam ra m?t (m?i ra tru?c)
-void sapXepTiviTheoNamRaMat(vector<TV>& danhSachTivi) {
-    sort(danhSachTivi.begin(), danhSachTivi.end(), [](const TV& a, const TV& b) {
-        return a.namRaMat > b.namRaMat;
-    });
+    }
+    return cnt;
 }
+void sapxep_moiramat(TiVi a[], int n) {
+    cout << "Sap xep ti vi moi ra mat: \n";
+    cout << "-----------------------------\n";
+    for (int i = 0; i < n-1; i++) {
+        for (int j = 1; j < n; j++) {
+            if (a[i].nam < a[j].nam) {
+                TiVi tmp = a[i];
+                a[i] = a[j];
+                a[j] = tmp;
+            }
+        }
+    }
+    cout << "Danh Sach Ti Vi da sap xep\n";
+    xuatDsTiVi(a, n);
+}
+void sapxep_theohang(TiVi a[], int n) {
+    cout << "Sap xep tivi co cung hang va sap xep theo gia: \n";
+    cout << "--------------------------------------------------\n";
+    for (int i = 0; i < n; i++) {
+        for (int j = 1; j < n; j++) {
+            if (a[i].hang == a[j].hang) {
+                for (int k = 0; k < j; k++) {
+                    for (int s = 1; s <= j; s++) {
+                        if (a[k].gia > a[s].gia) {
+                            TiVi tmp = a[s];
+                            a[s] = a[k];
+                            a[k] = a[s];
+                        }
+                    }
+                }
+            }
+        }
+    }
+    cout << "Danh Sach Ti Vi da sap xep\n";
+    xuatDsTiVi(a, n);
+}
+void user_input() {
+    int n;
+    cout << "Nhap so luong Ti Vi: ";
+    cin >> n;
 
+    TiVi a[10];
+    nhapDsTiVi(a, n);
+    xuatDsTiVi(a, n);
+    ghiDsTiVi(a, n);
+    docFile("dstivi.txt", n, a);
+    cout << "Nhap Ma Ti Vi Ban can tim: ";
+    char s[51];
+    cin.ignore();
+    cin.getline(s, 50);
+    find(a, s, n);
+    cout << "Nhap Ten Ti Vi Ban can tim: ";
+    char ten[51];
+    cin.ignore();
+    cin.getline(ten, 50);
+    findName(a, ten, n);
+    lc_DkGiongNoi(a, n);
+    cout << "Nhap So Nam san xuat Tivi Can Xuat: ";
+    int Year;
+    cin >> Year;
+    regex pattern_year("^[1-2][0-9]{2}[0-4]");
+    while (!regex_match(to_string(Year), pattern_year)) {
+        cout << "Nhap sai format Nhap lai: ";
+        cin >> Year;
+    }
+    findYear(a, Year, n);
+    cout << "Nhap khoang gia ma ban mong muon tim de xem Tivi:";
+    int start;
+    cout << "Vi tri start: ";
+    cin >> start;
+    cout << "- Vi tri end: ";
+    int end;
+    cin >> end;
+    cout << endl;
+    cout << "[" << start << " - " << end << "]\n";
+    cout << demTiVi(a, start, end, n);
+    sapxep_moiramat(a, n);
+    sapxep_theohang(a, n);
+}
 int main() {
-    vector<TV> danhSachTivi;
-    int luaChon;
-
-    do {
-        cout << "Menu:\n";
-        cout << "1. Nhap danh sach tivi\n";
-        cout << "2. Xuat danh sach tivi\n";
-        cout << "3. Luu danh sach tivi vao file\n";
-        cout << "4. Doc danh sach tivi tu file\n";
-        cout << "5. Tim tivi theo ma\n";
-        cout << "6. Tim tivi theo ten\n";
-        cout << "7. Xuat tivi theo dieu khien bang giong noi\n";
-        cout << "8. Sap xep tivi theo nam ra mat\n";
-        cout << "0. Thoat\n";
-        cout << "Nhap lua chon: ";
-        cin >> luaChon;
-
-        switch (luaChon) {
-            case 1: {
-                int soLuong;
-                cout << "Nhap so luong tivi: ";
-                cin >> soLuong;
-                for (int i = 0; i < soLuong; ++i) {
-                    TV tv;
-                    nhapThongTinTivi(tv);
-                    danhSachTivi.push_back(tv);
-                }
-                break;
-            }
-            case 2:
-                for (const auto& tv : danhSachTivi) {
-                    hienThiThongTinTivi(tv);
-                }
-                break;
-            case 3: {
-                string fileName;
-                bool ghiThem;
-                cout << "Nhap ten file: ";
-                cin >> fileName;
-                cout << "Ghi them vao file (1: co, 0: khong)? ";
-                cin >> ghiThem;
-                luuDanhSachTiviVaoFile(danhSachTivi, fileName, ghiThem);
-                break;
-            }
-            case 4: {
-                string fileName;
-                cout << "Nhap ten file de doc: ";
-                cin >> fileName;
-                docDanhSachTiviTuFile(danhSachTivi, fileName);
-                break;
-            }
-            case 5: {
-                string maTivi;
-                cout << "Nhap ma tivi can tim: ";
-                cin >> maTivi;
-                timTiviTheoMa(danhSachTivi, maTivi);
-                break;
-            }
-            case 6: {
-                string tuKhoa;
-                cout << "Nhap tu khoa can tim trong ten tivi: ";
-                cin >> tuKhoa;
-                timTiviTheoTen(danhSachTivi, tuKhoa);
-                break;
-            }
-            case 7: {
-                bool coDieuKhien;
-                cout << "Chon tivi co dieu khien bang giong noi (1: co, 0: khong): ";
-                cin >> coDieuKhien;
-                xuatTiviTheoDieuKhienGiongNoi(danhSachTivi, coDieuKhien);
-                break;
-            }
-            case 8:
-                sapXepTiviTheoNamRaMat(danhSachTivi);
-                cout << "Danh sach tivi da duoc sap xep theo nam ra mat (moi nhat truoc).\n";
-                break;
-            case 0:
-                cout << "Thoat chuong trinh.\n";
-                break;
-            default:
-                cout << "Lua chon khong hop le!\n";
-                break;
-        }
-
-    } while (luaChon != 0);
-
+    user_input();
     return 0;
 }
